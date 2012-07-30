@@ -760,8 +760,10 @@ void TCOD_sys_startup() {
 #ifdef TCOD_MACOSX
 	CustomSDLMain();
 #endif
+#if SDL_VERSION_ATLEAST(2,0,0)
 #ifndef NDEBUG
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#endif
 #endif
 	TCOD_IFNOT(SDL_Init(SDL_INIT_TIMER|SDL_INIT_VIDEO) >= 0 ) return;
 #ifndef	TCOD_WINDOWS
@@ -861,7 +863,11 @@ TCOD_renderer_t TCOD_sys_get_renderer() {
 void TCOD_sys_set_renderer(TCOD_renderer_t renderer) {
 	if ( renderer == TCOD_ctx.renderer ) return;
 	TCOD_ctx.renderer=renderer;
+#if SDL_VERSION_ATLEAST(2,0,0)
 	if ( window ) {
+#else
+	if ( screen ) {
+#endif
 		TCOD_sys_term();
 	}
 	TCOD_sys_init(TCOD_ctx.root->w,TCOD_ctx.root->h,TCOD_ctx.root->buf,TCOD_ctx.root->oldbuf,TCOD_ctx.fullscreen);
