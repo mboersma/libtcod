@@ -110,6 +110,7 @@ typedef struct {
 	int max_font_chars;
 	/* fullscreen data */
 	bool fullscreen;
+	float fullscreen_scale;
 	int fullscreen_offsetx;
 	int fullscreen_offsety;
 	/* asked by the user */
@@ -118,6 +119,9 @@ typedef struct {
 	/* actual resolution */
 	int actual_fullscreen_width;
 	int actual_fullscreen_height;
+	/* scale resolution */
+	int scale_fullscreen_width;
+	int scale_fullscreen_height;
 	/* renderer to use */
 	TCOD_renderer_t renderer;
 	/* user post-processing callback */
@@ -205,6 +209,7 @@ void TCOD_sys_restore_fps();
 
 /* switch fullscreen mode */
 void TCOD_sys_set_fullscreen(bool fullscreen);
+void TCOD_sys_set_scaling(bool scaling);
 void TCOD_sys_flush(bool render);
 TCOD_key_t TCOD_sys_check_for_keypress(int flags);
 TCOD_key_t TCOD_sys_wait_for_keypress(bool flush);
