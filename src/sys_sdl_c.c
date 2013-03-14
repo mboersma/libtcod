@@ -24,7 +24,6 @@
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-//#define TCOD_SDL2 // TEMPORARY REMOVE PLEASE
 
 #include <string.h>
 #include <stdio.h>
@@ -290,7 +289,6 @@ void TCOD_sys_load_font() {
 			charmap=temp;
 		}
 	}
-//#ifdef ZZZZZ
 	/* detect colored tiles */
 	for (i=0; i < TCOD_ctx.fontNbCharHoriz*TCOD_ctx.fontNbCharVertic; i++ ) {
 		int px,py,cx,cy;
@@ -317,7 +315,6 @@ void TCOD_sys_load_font() {
 			}
 		}
 	}	
-//#endif
 	/* convert 24/32 bits greyscale to 32bits font with alpha layer */
 	if ( ! hasTransparent && TCOD_ctx.font_greyscale ) {
 		bool invert=( fontKeyCol.r > 128 ); /* black on white font ? */
@@ -500,7 +497,7 @@ static void actual_rendering() {
 	SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
 	SDL_DestroyTexture(texture);
 #else
-	SDL_BlitScaled(scale_screen, &srcRect, screen, &dstRect);
+	SDL_SoftStretch(scale_screen, &srcRect, screen, &dstRect);
 #endif
 
 	if ( TCOD_ctx.sdl_cbk ) {
@@ -1574,8 +1571,13 @@ static int TCOD_sys_get_touch_finger_index(SDL_FingerID fingerId) {
 #endif
 
 void TCOD_sys_unproject_screen_coords(int sx, int sy, int *ssx, int *ssy) {
-	*ssx = (scale_data.src_x0 + ((sx - scale_data.dst_offset_x) * scale_data.src_copy_width) / scale_data.dst_display_width);
-	*ssy = (scale_data.src_y0 + ((sy - scale_data.dst_offset_y) * scale_data.src_copy_width) / scale_data.dst_display_width);
+	if (scale_data.dst_display_width != 0 ) {
+		*ssx = (scale_data.src_x0 + ((sx - scale_data.dst_offset_x) * scale_data.src_copy_width) / scale_data.dst_display_width);
+		*ssy = (scale_data.src_y0 + ((sy - scale_data.dst_offset_y) * scale_data.src_copy_width) / scale_data.dst_display_width);
+	} else {
+		*ssx=sx;
+		*ssy=sy;
+	}
 }
 
 void TCOD_sys_convert_console_to_screen_coords(int cx, int cy, int *sx, int *sy) {
@@ -1613,7 +1615,7 @@ static TCOD_event_t TCOD_sys_handle_event(SDL_Event *ev,TCOD_event_t eventMask, 
 			}
 		}
 		break;
-#if !SDL_VERSION_ATLEAST(2,0,0)	
+#if !SDL_VERSION_ATLEAST(2,0,0)
 		case SDL_ACTIVEEVENT : 
 			switch(ev->active.state) {
 				case SDL_APPMOUSEFOCUS : TCOD_ctx.app_has_mouse_focus=ev->active.gain; break;
@@ -1787,8 +1789,10 @@ static TCOD_event_t TCOD_sys_handle_event(SDL_Event *ev,TCOD_event_t eventMask, 
 			if ( (TCOD_EVENT_MOUSE_MOVE & eventMask) != 0) {
 				SDL_MouseMotionEvent *mev=&ev->motion;
 				TCOD_sys_unproject_screen_coords(mev->x, mev->y, &mouse->x, &mouse->y);
-				mouse->dx += (mev->xrel * scale_data.src_proportionate_width) / scale_data.surface_width;
-				mouse->dy += (mev->yrel * scale_data.src_proportionate_height) / scale_data.surface_height;
+				if (scale_data.surface_width != 0) {
+					mouse->dx += (mev->xrel * scale_data.src_proportionate_width) / scale_data.surface_width;
+					mouse->dy += (mev->yrel * scale_data.src_proportionate_height) / scale_data.surface_height;
+				}
 				mouse->cx = mouse->x / TCOD_ctx.font_width;
 				mouse->cy = mouse->y / TCOD_ctx.font_height;
 				mouse->dcx = mouse->dx / TCOD_ctx.font_width;
