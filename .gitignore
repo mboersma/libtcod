@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+# Compiled binaries
+hmtool
+hmtool_debug
+samples_c
+samples_c_debug
+samples_cpp
+samples_cpp_debug
